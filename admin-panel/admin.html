@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SALZ Admin Panel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;1,700;1,800;1,900&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --c-black: #000000;
+      --c-navy: #14213d;
+      --c-orange: #fca311;
+      --c-gray: #e5e5e5;
+      --c-white: #ffffff;
+    }
+
+    h1, h2, h3, h4, h5, h6, p, span, label, .no-block {
+      pointer-events: none;
+    }
+
+    /* pointer-events:none only blocks click/hover — text can still be
+       selected (drag or Ctrl+A) unless user-select is also disabled.
+       Editable cells and form fields are explicitly excluded below. */
+    body {
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      user-select: none;
+    }
+
+    input, textarea, select, .editable-cell {
+      -webkit-user-select: auto;
+      -moz-user-select: auto;
+      user-select: auto;
+    }
+
+    img {
+      -webkit-user-drag: none;
+      user-drag: none;
+      pointer-events: none;
+    }
+
+    body {
+      background: var(--c-navy);
+      color: var(--c-white);
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    .font-display { font-family: 'Montserrat', sans-serif; font-weight: 800; font-style: italic; }
+
+    .sidebar {
+      background: var(--c-black);
+      min-height: 100vh;
+    }
+
+    .sidebar-item {
+      padding: 16px 24px;
+      cursor: pointer;
+      border-left: 4px solid transparent;
+      transition: all 0.2s;
+      pointer-events: auto;
+    }
+
+    .sidebar-item:hover, .sidebar-item.active {
+      background: var(--c-navy);
+      border-left-color: var(--c-orange);
+    }
+
+    .btn {
+      background: var(--c-orange);
+      color: var(--c-black);
+      padding: 12px 22px;
+      border-radius: 6px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      pointer-events: auto;
+    }
+
+    .btn:hover { filter: brightness(1.1); transform: scale(1.03); }
+    .btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+
+    .btn-secondary { background: #475569; color: #fff; }
+    .btn-danger { background: #b91c1c; color: #fff; }
+    .btn-sm { padding: 8px 14px; font-size: 13px; }
+
+    table { width: 100%; border-collapse: collapse; background: var(--c-white); color: var(--c-black); border-radius: 8px; overflow: hidden; }
+    th { background: var(--c-gray); text-align: left; padding: 14px 18px; font-size: 13px; pointer-events: none; }
+    td { padding: 12px 18px; border-top: 1px solid var(--c-gray); }
+    tbody tr:hover { background: #f5f5f5; }
+
+    input, select, textarea {
+      width: 100%;
+      background: var(--c-navy);
+      color: var(--c-white);
+      border: 1px solid #33415f;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 16px;
+      pointer-events: auto;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--c-orange);
+    }
+
+    label { display: block; margin-bottom: 8px; font-weight: 600; }
+    .form-group { margin-bottom: 20px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+    .section { display: none; }
+    .section.active { display: block; }
+
+    .modal {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal.active { display: flex; }
+    .modal-content {
+      background: #1c2b4d;
+      padding: 32px;
+      border-radius: 12px;
+      max-width: 520px;
+      width: 90%;
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+
+    /* Inline-editable cell */
+    .editable-cell {
+      pointer-events: auto;
+      cursor: text;
+      border-radius: 4px;
+      padding: 4px 6px;
+    }
+    .editable-cell:hover { background: #eee; outline: 1px dashed #999; }
+    .editable-cell:focus { background: #fff8e6; outline: 2px solid var(--c-orange); }
+
+    /* Status slide toggle */
+    .toggle {
+      position: relative;
+      display: inline-block;
+      width: 52px;
+      height: 28px;
+      pointer-events: auto;
+      cursor: pointer;
+    }
+    .toggle-track {
+      position: absolute; inset: 0;
+      background: #b91c1c;
+      border-radius: 999px;
+      transition: background 0.2s;
+    }
+    .toggle.on .toggle-track { background: #157a3d; }
+    .toggle-knob {
+      position: absolute; top: 3px; left: 3px;
+      width: 22px; height: 22px;
+      background: var(--c-white);
+      border-radius: 50%;
+      transition: left 0.2s;
+    }
+    .toggle.on .toggle-knob { left: 27px; }
+
+    .status-badge { display: inline-block; padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: 700; text-transform: uppercase; pointer-events: none; }
+    .status-available { background: #dcfce7; color: #157a3d; }
+    .status-closed { background: #fee2e2; color: #b91c1c; }
+    .badge { display: inline-block; padding: 4px 8px; background: var(--c-orange); color: var(--c-black); border-radius: 4px; font-size: 12px; font-weight: 700; pointer-events: none; }
+    .action-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+
+  <!-- LOGIN SCREEN (self-contained: no redirect to the public site) -->
+  <div id="loginScreen" class="min-h-screen flex items-center justify-center px-6">
+    <div class="w-full max-w-sm bg-black/40 border border-white/10 rounded-xl p-8">
+      <div class="no-block flex items-center gap-2 mb-1">
+        <svg width="28" height="28" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#fff" stroke-width="1.4">
+          <path d="M14.2 14.2H17V6.9375C17 4.76288 15.2371 3 13.0625 3H5.8V5.8M14.2 14.2V7.79063L7.79062 14.2H14.2ZM14.2 14.2V17H6.9375C4.76288 17 3 15.2371 3 13.0625V5.8H5.8M5.8 5.8V12.2313L12.2313 5.8H5.8Z" stroke-linejoin="round"/>
+        </svg>
+        <h1 class="font-display text-2xl">SALZ ADMIN</h1>
+      </div>
+      <p class="no-block text-sm text-gray-400 mb-6">Sign in to manage the store</p>
+      <input type="password" id="adminPassword" placeholder="Password" onkeydown="if(event.key==='Enter') adminLogin()">
+      <button class="btn w-full" onclick="adminLogin()"><span class="no-block">LOGIN</span></button>
+      <p id="loginError" class="no-block text-sm text-red-400 mt-4 hidden">Invalid password</p>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashboard" class="flex hidden">
+    <div class="sidebar w-64">
+      <div class="p-6 border-b border-white/10">
+        <h1 class="font-display text-xl no-block">SALZ ADMIN</h1>
+      </div>
+      <div>
+        <div class="sidebar-item active" onclick="switchAdminSection('gold', this)"><span class="no-block">GOLD</span></div>
+        <div class="sidebar-item" onclick="switchAdminSection('bot_service', this)"><span class="no-block">BOT SERVICE</span></div>
+        <div class="sidebar-item" onclick="switchAdminSection('jockey', this)"><span class="no-block">JOCKEY</span></div>
+        <div class="sidebar-item" onclick="switchAdminSection('orders', this)"><span class="no-block">ORDERS</span></div>
+        <div class="sidebar-item" onclick="switchAdminSection('exchange-rates', this)"><span class="no-block">EXCHANGE RATES</span></div>
+        <div class="sidebar-item" onclick="logoutAdmin()"><span class="no-block">LOGOUT</span></div>
+      </div>
+    </div>
+
+    <div class="flex-1 overflow-auto">
+      <div class="p-8">
+
+        <!-- GOLD: dedicated inline-edit UI -->
+        <section id="gold" class="section active">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="font-display text-2xl no-block">GOLD STOCK &amp; RATE</h2>
+          </div>
+          <div class="overflow-x-auto">
+            <table id="goldAdminTable">
+              <thead>
+                <tr>
+                  <th>SERVER</th>
+                  <th>STOCK</th>
+                  <th>RATE (IDR)</th>
+                  <th>STATUS</th>
+                  <th>ORDER</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody><tr><td colspan="6" class="text-center py-6"><span class="no-block">Loading...</span></td></tr></tbody>
+            </table>
+          </div>
+          <button class="btn mt-6" onclick="openGoldModal()"><span class="no-block">+ ADD SERVER</span></button>
+        </section>
+
+        <!-- BOT SERVICE -->
+        <section id="bot_service" class="section">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="font-display text-2xl no-block">BOT SERVICE</h2>
+            <button class="btn" onclick="openProductModal('bot_service')"><span class="no-block">+ ADD PLAN</span></button>
+          </div>
+          <div class="overflow-x-auto">
+            <table id="botServiceAdminTable">
+              <thead><tr><th>Name</th><th>Tier</th><th>Price (IDR)</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody><tr><td colspan="5" class="text-center py-6"><span class="no-block">Loading...</span></td></tr></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- JOCKEY -->
+        <section id="jockey" class="section">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="font-display text-2xl no-block">JOCKEY</h2>
+            <button class="btn" onclick="openProductModal('jockey')"><span class="no-block">+ ADD PLAN</span></button>
+          </div>
+          <div class="overflow-x-auto">
+            <table id="jockeyAdminTable">
+              <thead><tr><th>Name</th><th>Tier</th><th>Price (IDR)</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody><tr><td colspan="5" class="text-center py-6"><span class="no-block">Loading...</span></td></tr></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ORDERS -->
+        <section id="orders" class="section">
+          <h2 class="font-display text-2xl no-block mb-6">ORDERS</h2>
+          <div class="overflow-x-auto">
+            <table id="ordersTable">
+              <thead><tr><th>Order ID</th><th>Product</th><th>Customer</th><th>Qty</th><th>Total (IDR)</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+              <tbody><tr><td colspan="8" class="text-center py-6"><span class="no-block">Loading...</span></td></tr></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- EXCHANGE RATES -->
+        <section id="exchange-rates" class="section">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="font-display text-2xl no-block">EXCHANGE RATES</h2>
+            <button class="btn" onclick="syncExchangeRates()"><span class="no-block">SYNC NOW</span></button>
+          </div>
+          <div class="overflow-x-auto">
+            <table id="exchangeRatesTable">
+              <thead><tr><th>Currency</th><th>Rate to IDR</th><th>Last Synced</th></tr></thead>
+              <tbody><tr><td colspan="3" class="text-center py-6"><span class="no-block">Loading...</span></td></tr></tbody>
+            </table>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Gold server modal (3 fields only) -->
+  <div id="goldModal" class="modal">
+    <div class="modal-content">
+      <h3 class="text-2xl font-bold mb-6 no-block">Add Gold Server</h3>
+      <div class="form-group">
+        <label class="no-block">Server Name</label>
+        <input type="text" id="goldServerName" placeholder="e.g. ATLANTICA ONLINE VALOFE">
+      </div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="no-block">Stock</label>
+          <input type="number" id="goldStock" value="999">
+        </div>
+        <div class="form-group">
+          <label class="no-block">Price per Stock (IDR)</label>
+          <input type="number" id="goldPrice">
+        </div>
+      </div>
+      <div class="flex gap-4">
+        <button class="btn flex-1" onclick="saveGoldProduct()"><span class="no-block">SAVE</span></button>
+        <button class="btn btn-secondary flex-1" onclick="closeGoldModal()"><span class="no-block">CANCEL</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bot Service / Jockey add-edit modal -->
+  <div id="productModal" class="modal">
+    <div class="modal-content">
+      <h3 class="text-2xl font-bold mb-6 no-block">Add / Edit Plan</h3>
+      <div class="form-group">
+        <label class="no-block">Name</label>
+        <input type="text" id="productName">
+      </div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="no-block">Tier</label>
+          <select id="productTier">
+            <option value="elite">Elite</option>
+            <option value="exclusive">Exclusive</option>
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="no-block">Price (IDR)</label>
+          <input type="number" id="productPrice">
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="no-block">Stock</label>
+          <input type="number" id="productStock" value="999">
+        </div>
+        <div class="form-group">
+          <label class="no-block">Status</label>
+          <select id="productStatus">
+            <option value="available">Available</option>
+            <option value="closed">Closed</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="no-block">Billing note (optional)</label>
+        <input type="text" id="productBilling" placeholder="e.g. IDR 160,000 per month after">
+      </div>
+      <div class="form-group">
+        <label class="no-block">Description (optional)</label>
+        <textarea id="productDescription" rows="3" placeholder="What this plan is"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="no-block">Benefit (optional)</label>
+        <textarea id="productBenefit" rows="3" placeholder="What the customer gets, one per line"></textarea>
+      </div>
+      <div class="flex gap-4">
+        <button class="btn flex-1" onclick="saveProduct()"><span class="no-block">SAVE</span></button>
+        <button class="btn btn-secondary flex-1" onclick="closeProductModal()"><span class="no-block">CANCEL</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Update order status modal -->
+  <div id="orderStatusModal" class="modal">
+    <div class="modal-content">
+      <h3 class="text-2xl font-bold mb-6 no-block">Update Order Status</h3>
+      <div class="form-group">
+        <label class="no-block">Status</label>
+        <select id="orderStatus">
+          <option value="pending">Pending</option>
+          <option value="completed">Completed</option>
+          <option value="failed">Failed</option>
+        </select>
+      </div>
+      <div class="flex gap-4">
+        <button class="btn flex-1" onclick="updateOrderStatus()"><span class="no-block">UPDATE</span></button>
+        <button class="btn btn-secondary flex-1" onclick="closeOrderStatusModal()"><span class="no-block">CANCEL</span></button>
+      </div>
+    </div>
+  </div>
+
+  <script src="admin-script.js"></script>
+</body>
+</html>

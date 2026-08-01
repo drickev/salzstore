@@ -1,0 +1,41 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mv public/index.html public/script.js frontend/)",
+      "Bash(mv public/admin.html public/admin-script.js admin-panel/)",
+      "Bash(taskkill //F //IM node.exe //FI \"WINDOWTITLE eq *\")",
+      "Bash(wmic process *)",
+      "Bash(grep -i \"backend/server.js\\\\|backend\\\\\\\\\\\\\\\\server.js\")",
+      "Bash(pkill -f \"backend/server.js\")",
+      "Bash(curl -s -o /dev/null -w \"GET / -> %{http_code}\\\\n\" http://localhost:5000/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5000/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5000/admin)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5000/script.js)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5000/admin-script.js)",
+      "Bash(curl -s http://localhost:5000/api/products)",
+      "Bash(curl -s http://localhost:5000/api/exchange-rates)",
+      "Bash(curl -s http://localhost:5000/api/config)",
+      "Bash(npm run *)",
+      "Bash(curl -s -X POST http://localhost:5000/api/exchange-rates/sync/update)",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const j=JSON.parse\\(d\\);console.log\\(j.length, 'products'\\); j.forEach\\(p=>console.log\\(p.type, '-', p.serverName||p.name, '-', p.price, '-', p.status\\)\\);}\\)\")",
+      "Bash(chromium-cli --session salz)",
+      "Bash(npm ls *)",
+      "Bash(node -e \"try{require.resolve\\('playwright'\\)}catch\\(e\\){console.log\\('no playwright'\\)}\")",
+      "Bash(curl -s -o /dev/null -w \"index.html: %{http_code}\\\\n\" http://localhost:5000/)",
+      "Bash(curl -s -o /dev/null -w \"script.js: %{http_code}\\\\n\" http://localhost:5000/script.js)",
+      "Bash(curl -s http://localhost:5000/)",
+      "Bash(curl -s http://localhost:5000/script.js)",
+      "Bash(curl -s -o /dev/null -w \"logo.png: %{http_code}\\\\n\" http://localhost:5000/logo.png)",
+      "Bash(node -e ' *)",
+      "Bash(netstat -ano)",
+      "Bash(curl -s -I http://localhost:5000/)",
+      "Bash(curl -s http://localhost:5000/admin)",
+      "Bash(taskkill //F //PID 382456)",
+      "Bash(sleep 3 && cat /tmp/server_restart.log && echo \"---config---\" && curl -s http://localhost:5000/api/config)",
+      "Read(//tmp/**)",
+      "Bash(taskkill //F //PID 387760)",
+      "Bash(curl -s -o /dev/null -w \"GET /: %{http_code}\\\\n\" http://localhost:5000/)",
+      "Bash(curl -s -o /dev/null -w \"GET /admin: %{http_code}\\\\n\" http://localhost:5000/admin)"
+    ]
+  }
+}

@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SALZ Game Store</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;1,700;1,800;1,900&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --c-black: #000000;
+      --c-navy: #14213d;
+      --c-orange: #fca311;
+      --c-gray: #e5e5e5;
+      --c-white: #ffffff;
+    }
+
+    /* Prevent pointer events blocking on decorative text/images */
+    h1, h2, h3, h4, h5, h6, p, span, label, .no-block {
+      pointer-events: none;
+    }
+
+    /* pointer-events:none only blocks click/hover — text can still be
+       selected (drag or Ctrl+A) unless user-select is also disabled. */
+    body {
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      user-select: none;
+    }
+
+    input, textarea, select {
+      -webkit-user-select: auto;
+      -moz-user-select: auto;
+      user-select: auto;
+    }
+
+    img {
+      -webkit-user-drag: none;
+      user-drag: none;
+      pointer-events: none;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: linear-gradient(180deg, var(--c-black) 0%, var(--c-navy) 40%, var(--c-navy) 100%);
+      color: var(--c-white);
+      font-family: 'Montserrat', sans-serif;
+      cursor: url('asset/cursor/cursor_click.cur'), auto;
+    }
+
+    /* Explicit on interactive elements too, since browsers give <a>/<button>/<select>
+       their own default pointer cursor which would otherwise win over body's. */
+    a, button, select {
+      cursor: url('asset/cursor/cursor_click.cur'), auto;
+    }
+
+    /* Section 1 (hero) background overlay — swap the file at asset/banner/section1.png
+       to change it. Put the image on a ::before layer (not directly on #home) so
+       opacity/blend-mode only affect the image, not the logo/nav content on top. */
+    #home {
+      position: relative;
+      overflow: hidden;
+    }
+
+    #home::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url('asset/banner/section1.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      opacity: 0.1;              /* 0 = invisible, 1 = fully visible */
+      mix-blend-mode: luminosity; /* try: normal, multiply, screen, overlay, soft-light */
+      z-index: 0;
+    }
+
+    #home .frame-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ---- Cyberpunk blue neon flicker glow behind a logo image ---- */
+    .cyber-logo-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 48px;
+    }
+
+    .cyber-logo-wrap::before {
+      content: '';
+      position: absolute;
+      inset: -10px;
+      background: radial-gradient(ellipse at center, rgba(0, 200, 255, 0.55) 0%, rgba(0, 120, 255, 0.28) 42%, transparent 72%);
+      filter: blur(20px);
+      animation: cyber-flicker 2.6s infinite;
+      z-index: 0;
+    }
+
+    .cyber-logo-img {
+      position: relative;
+      z-index: 1;
+      max-width: 320px;
+      width: 100%;
+      height: auto;
+      filter: drop-shadow(0 0 14px rgba(0, 190, 255, 0.7));
+    }
+
+    @keyframes cyber-flicker {
+      0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
+      20%, 24%, 55% { opacity: 0.3; }
+      62% { opacity: 0.65; }
+    }
+
+    .font-display {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-style: italic;
+      letter-spacing: 0.5px;
+    }
+
+    /* ---- Top parallelogram nav strip ---- */
+    .nav-strip {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 48px;
+    }
+
+    /* Fixed-px skew (not %) so the angle is identical on every piece regardless
+       of its width — a % skew looks different on a wide button vs a thin divider. */
+    .nav-seg {
+      background: var(--c-white);
+      color: var(--c-black);
+      clip-path: polygon(34px 0, 100% 0, calc(100% - 34px) 100%, 0 100%);
+      padding: 18px 34px;
+      font-size: 20px;
+      transition: background 0.25s ease, transform 0.25s ease;
+      pointer-events: auto;
+      text-decoration: none;
+      display: inline-block;
+      animation: nav-idle-pulse 2.4s ease-in-out infinite;
+    }
+
+    .nav-seg:nth-of-type(2) { animation-delay: 0.2s; }
+    .nav-seg:nth-of-type(3) { animation-delay: 0.4s; }
+
+    .nav-seg:hover {
+      background: var(--c-orange);
+      transform: translateY(-3px);
+      animation-play-state: paused;
+    }
+
+    /* Idle glow — filter:drop-shadow (not box-shadow) follows the clip-path's
+       actual silhouette instead of the element's rectangular box, so the glow
+       hugs the parallelogram shape instead of appearing as a square halo. */
+    @keyframes nav-idle-pulse {
+      0%, 100% { filter: drop-shadow(0 0 0 rgba(252, 163, 17, 0)); }
+      50% { filter: drop-shadow(0 0 10px rgba(252, 163, 17, 0.95)); }
+    }
+
+    .nav-divider {
+      width: 50px;
+      background: var(--c-orange);
+      clip-path: polygon(34px 0, 100% 0, calc(100% - 34px) 100%, 0 100%);
+      margin: 0 -1px;
+    }
+
+    /* ---- Section banner (GOLD / BOT SERVICE / JOCKEY headers) ---- */
+    .section-banner {
+      display: inline-flex;
+      align-items: stretch;
+      margin-bottom: 36px;
+    }
+
+    /* Left edge stays flat (flag/pennant shape); right edge uses the same
+       34px pixel skew as .nav-seg so the incline angle matches exactly. */
+    .section-banner .label {
+      background: var(--c-white);
+      color: var(--c-black);
+      padding: 14px 50px 14px 22px;
+      clip-path: polygon(0 0, 100% 0, calc(100% - 34px) 100%, 0% 100%);
+      font-size: 26px;
+    }
+
+    .section-banner .accent {
+      width: 50px;
+      background: var(--c-orange);
+      clip-path: polygon(34px 0, 100% 0, calc(100% - 34px) 100%, 0 100%);
+      margin-left: -24px;
+    }
+
+    /* ---- Gold table ---- */
+    .gold-panel {
+      background: var(--c-gray);
+      border-radius: 6px;
+      overflow: hidden;
+      color: var(--c-black);
+    }
+
+    .gold-panel table { width: 100%; border-collapse: collapse; }
+
+    .gold-panel thead th {
+      background: #cfcfcf;
+      color: var(--c-navy);
+      text-align: left;
+      padding: 16px 20px;
+      font-size: 14px;
+      letter-spacing: 0.5px;
+      pointer-events: none;
+    }
+
+    .gold-panel tbody td {
+      padding: 14px 20px;
+      font-weight: 700;
+      border-top: 1px solid #d4d4d4;
+      pointer-events: none;
+    }
+
+    .row-available { color: #157a3d; }
+    .row-closed { color: #b91c1c; }
+
+    .status-dot {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      margin-right: 6px;
+    }
+
+    .dot-available { background: #157a3d; }
+    .dot-closed { background: #b91c1c; }
+
+    /* ---- Calculator ---- */
+    .calc-card {
+      background: var(--c-white);
+      color: var(--c-black);
+      border-radius: 6px;
+      padding: 28px;
+    }
+
+    .calc-field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: #52525b;
+      margin-bottom: 8px;
+      letter-spacing: 0.4px;
+    }
+
+    .calc-field input, .calc-field select {
+      width: 100%;
+      background: var(--c-gray);
+      border: none;
+      border-radius: 4px;
+      padding: 12px 14px;
+      font-weight: 600;
+      color: var(--c-black);
+      pointer-events: auto;
+    }
+
+    .calc-field input:focus, .calc-field select:focus {
+      outline: 2px solid var(--c-orange);
+    }
+
+    /* ---- Order now ---- */
+    .order-btn {
+      background: var(--c-white);
+      color: var(--c-black);
+      border-radius: 8px;
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      pointer-events: auto;
+    }
+
+    .order-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 24px rgba(252, 163, 17, 0.25);
+      background: var(--c-orange);
+    }
+
+    /* ---- Pricing cards (bot service / jockey) ---- */
+    /* Title + benefit list are top-aligned by default (flex-start) so they start
+       at the same row across sibling cards regardless of how long each list is.
+       Only .price-footer gets pushed to the bottom, via margin-top:auto. */
+    .price-card {
+      background: linear-gradient(160deg, #ffffff 0%, #e9e9e9 100%);
+      color: var(--c-black);
+      border-radius: 10px;
+      padding: 28px;
+      min-height: 220px;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 18px;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .price-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 40px rgba(252, 163, 17, 0.2);
+    }
+
+    .price-card .price {
+      color: #157a3d;
+      font-size: 28px;
+    }
+
+    .price-card .price-footer {
+      margin-top: auto;
+    }
+
+    .price-card .card-extras p + ul {
+      margin-top: 10px;
+    }
+
+    .price-card .card-extras p,
+    .price-card .card-extras li {
+      color: #0d9488;
+      font-weight: 500;
+      text-shadow: 0 0 6px rgba(13, 148, 136, 0.35);
+    }
+
+    .price-card .card-extras li {
+      line-height: 1.6;
+    }
+
+    /* ---- Each screen (hero, gold, bot-service, jockey) frames at 16:9 on desktop,
+       matching the reference mockups where 4 stacked 16:9 screens = one page ---- */
+    .frame-16-9 {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      scroll-margin-top: 24px;
+    }
+
+    @media (min-width: 768px) {
+      .frame-16-9 { aspect-ratio: 16 / 9; }
+    }
+
+    .frame-inner {
+      width: 100%;
+      max-width: 64rem;
+      margin: 0 auto;
+      padding: 3rem 1.5rem;
+    }
+
+    /* ---- Floating "back to top" button ---- */
+    .scroll-top-btn {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: var(--c-orange);
+      color: var(--c-black);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+      border: none;
+      cursor: pointer;
+      z-index: 50;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(12px);
+      transition: opacity 0.25s ease, transform 0.25s ease, background 0.2s ease;
+    }
+
+    .scroll-top-btn.visible {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    .scroll-top-btn:hover {
+      background: var(--c-white);
+      transform: translateY(-2px);
+    }
+
+    /* ---- Running text (marquee), fades out at the left/right edges ---- */
+    .marquee-wrap {
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+      margin-bottom: 28px;
+      -webkit-mask-image: linear-gradient(to right, transparent 0, black 60px, black calc(100% - 60px), transparent 100%);
+      mask-image: linear-gradient(to right, transparent 0, black 60px, black calc(100% - 60px), transparent 100%);
+    }
+
+    .marquee-track {
+      display: flex;
+      align-items: center;
+      gap: 64px;
+      width: max-content;
+      white-space: nowrap;
+      animation: marquee-scroll 16s linear infinite;
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: 1px;
+      color: var(--c-orange);
+      padding: 10px 0;
+    }
+
+    @keyframes marquee-scroll {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+
+    /* ---- Image marquee (logo/banner strip), same infinite-loop technique as the
+       text marquee above. Sizing note: don't worry about matching canvas sizes —
+       every image is forced to the same HEIGHT (.image-marquee-track img) and its
+       width scales automatically to keep its own aspect ratio, so mixed image
+       sizes still line up cleanly. Just export images reasonably high-res. */
+    .image-marquee-wrap {
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+      height: 90px;
+      margin-top: 20px;
+      -webkit-mask-image: linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%);
+      mask-image: linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%);
+    }
+
+    .image-marquee-track {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      height: 100%;
+      width: max-content;
+      animation: marquee-scroll 22s linear infinite;
+    }
+
+    .image-marquee-track img {
+      height: 100%;
+      width: auto;
+      object-fit: contain;
+      opacity: 0.8;
+      display: block;
+    }
+
+    /* ---- Logo container (hero) ---- */
+    .logo-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .logo-image {
+      display: block;
+      width: 100%;
+      max-width: 340px;
+      height: auto;
+    }
+
+    /* ---- Footer ---- */
+    footer {
+      background: var(--c-black);
+      padding: 56px 24px 28px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .footer-inner {
+      max-width: 64rem;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1.4fr 1fr 1fr 1fr;
+      gap: 40px;
+    }
+
+    @media (max-width: 768px) {
+      .footer-inner { grid-template-columns: 1fr; }
+    }
+
+    .footer-logo img {
+      display: block;
+      width: 75%;
+      max-width: 210px;
+      height: auto;
+      margin-bottom: 64px;
+    }
+
+    .footer-desc {
+      color: #9ca3af;
+      font-size: 14px;
+      line-height: 1.6;
+      max-width: 320px;
+      margin-top: 8px;
+    }
+
+    .footer-col h4 {
+      font-weight: 700;
+      margin-bottom: 16px;
+      font-size: 15px;
+      letter-spacing: 0.3px;
+    }
+
+    .footer-col a,
+    .footer-col p {
+      display: block;
+      color: #9ca3af;
+      font-size: 14px;
+      margin-bottom: 12px;
+      text-decoration: none;
+    }
+
+    .footer-col a {
+      pointer-events: auto;
+      transition: color 0.2s ease;
+    }
+
+    .footer-col a:hover {
+      color: var(--c-orange);
+    }
+
+    .footer-bottom {
+      max-width: 64rem;
+      margin: 40px auto 0;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      text-align: center;
+      color: #6b7280;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HERO -->
+  <header id="home" class="frame-16-9">
+    <div class="frame-inner flex flex-col items-center justify-center text-center">
+      <!-- Extra logo asset with cyberpunk neon flicker glow behind it -->
+      <div class="no-block cyber-logo-wrap mb-4">
+        <img src="asset/logo/aologo.png" alt="" class="cyber-logo-img">
+      </div>
+
+      <!-- Logo container: drop your logo file at frontend/logo.png (or edit the src
+           below) to replace it. Falls back to a text mark automatically if the
+           file isn't there yet, so the page never shows a broken image. -->
+      <div class="no-block logo-container mb-10">
+        <img id="logoImage" class="logo-image" src="logo.png" alt="SALZ Game Store"
+             onerror="this.style.display='none'; document.getElementById('logoFallback').style.display='flex';">
+        <div id="logoFallback" class="flex-col items-center" style="display:none;">
+          <h1 class="font-display text-6xl mb-2">SALZ</h1>
+          <p class="text-sm tracking-[6px] text-gray-300">GAME STORE</p>
+        </div>
+      </div>
+
+      <nav class="nav-strip">
+        <a href="#gold" class="nav-seg font-display">GOLD</a>
+        <div class="nav-divider"></div>
+        <a href="#bot-service" class="nav-seg font-display">BOT SERVICE</a>
+        <div class="nav-divider"></div>
+        <a href="#jockey" class="nav-seg font-display">JOCKEY</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- GOLD -->
+    <section id="gold" class="frame-16-9">
+      <div class="frame-inner">
+        <div class="section-banner">
+          <span class="label font-display">GOLD</span>
+          <span class="accent"></span>
+        </div>
+
+        <div class="no-block mb-4">
+          <h3 class="text-lg font-semibold text-gray-200">GOLD STOCK &amp; RATE</h3>
+        </div>
+
+        <div class="gold-panel">
+          <table id="goldTable">
+            <thead>
+              <tr>
+                <th>SERVER</th>
+                <th>STOCK</th>
+                <th>EXCHANGE RATE</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="3" class="text-center py-6"><span class="no-block">Loading...</span></td></tr>
+            </tbody>
+          </table>
+          <div class="flex items-center gap-6 px-5 py-3 bg-white">
+            <span class="no-block text-xs font-bold flex items-center"><span class="status-dot dot-available"></span>AVAILABLE ORDER</span>
+            <span class="no-block text-xs font-bold flex items-center"><span class="status-dot dot-closed"></span>CLOSED ORDER</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10 items-start">
+          <div>
+            <div class="no-block mb-3">
+              <h4 class="text-base font-bold">NOT IDR? CHECK RATE HERE (VALOFE)</h4>
+            </div>
+            <div class="calc-card">
+              <div class="grid grid-cols-2 gap-4">
+                <div class="calc-field">
+                  <label class="no-block">SELECT CURRENCY</label>
+                  <select id="currencySelect" onchange="updateExchange()"></select>
+                </div>
+                <div class="calc-field">
+                  <label class="no-block">EXCHANGE RATE TO IDR</label>
+                  <input type="text" id="rateDisplay" readonly value="Loading...">
+                </div>
+                <div class="calc-field">
+                  <label class="no-block">GOLD AMOUNT</label>
+                  <input type="number" id="goldAmount" placeholder="0" min="0" oninput="updateExchange()">
+                </div>
+                <div class="calc-field">
+                  <label class="no-block">FINAL PRICE ASSUMPTION</label>
+                  <input type="text" id="finalPrice" readonly value="0">
+                </div>
+              </div>
+              <p class="no-block text-xs text-gray-500 mt-4">*The final price may vary depending on the exchange rate and user application fees.</p>
+            </div>
+          </div>
+
+          <div>
+            <div class="no-block mb-3">
+              <h3 class="font-display text-2xl">ORDER NOW!</h3>
+            </div>
+            <div class="flex flex-col gap-4" id="orderNowGold"></div>
+
+            <!-- Image marquee: add/remove <img> tags to change the logos/banners.
+                 Keep both halves identical (loop duplicates them for a seamless scroll). -->
+            <div class="image-marquee-wrap no-block">
+              <div class="image-marquee-track">
+                <img src="asset/payment/marquee/payment.png" alt="Payment methods">
+                <img src="asset/payment/marquee/payment.png" alt="Payment methods">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- BOT SERVICE -->
+    <section id="bot-service" class="frame-16-9">
+      <div class="frame-inner">
+        <div class="section-banner">
+          <span class="label font-display">BOT SERVICE</span>
+          <span class="accent"></span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8" id="botServiceContainer"></div>
+
+        <div class="mt-12">
+          <div class="no-block mb-4">
+            <h3 class="font-display text-2xl">ORDER NOW!</h3>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="orderNowBotService"></div>
+
+          <!-- Image marquee: add/remove <img> tags to change the logos/banners.
+               Keep both halves identical (loop duplicates them for a seamless scroll). -->
+          <div class="image-marquee-wrap no-block">
+            <div class="image-marquee-track">
+              <img src="asset/payment/marquee/payment.png" alt="Payment methods">
+              <img src="asset/payment/marquee/payment.png" alt="Payment methods">
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- JOCKEY -->
+    <section id="jockey" class="frame-16-9">
+      <div class="frame-inner">
+        <div class="section-banner">
+          <span class="label font-display">JOCKEY</span>
+          <span class="accent"></span>
+        </div>
+
+        <!-- Running text: edit the message inside the two <span> below (both must
+             stay identical — the loop duplicates it so the scroll looks seamless). -->
+        <div class="marquee-wrap no-block">
+          <div class="marquee-track">
+            <span>🎮 SALZ STORE JOKI🔥 Trusted Since 2022 🔥</span>
+            <span>🛡️ Melayani Jasa Joki Atlantica Online – Seluruh Server!Bingung leveling? Gak sempat main? Tenang... biar kami yang bantu push char kamu sampai jadi 💪</span>
+            <span>🎮 SALZ STORE JOKI🔥 Trusted Since 2022 🔥</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8" id="jockeyContainer"></div>
+
+        <div class="mt-12">
+          <div class="no-block mb-4">
+            <h3 class="font-display text-2xl">ORDER NOW!</h3>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="orderNowJockey"></div>
+
+          <!-- Image marquee: add/remove <img> tags to change the logos/banners.
+               Keep both halves identical (loop duplicates them for a seamless scroll). -->
+          <div class="image-marquee-wrap no-block">
+            <div class="image-marquee-track">
+              <img src="asset/payment/marquee/payment.png" alt="Payment methods">
+              <img src="asset/payment/marquee/payment.png" alt="Payment methods">
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-logo no-block">
+        <img src="asset/footer/red_full.png" alt="SALZ Game Store">
+        <p class="footer-desc">SALZ Game Store provides Atlantica Online Gold, bot services, and leveling services (joki) for all servers, featuring fast responses and a secure process.</p>
+        <p class="footer-desc">Trusted since 2021.</p>
+      </div>
+
+      <div class="footer-col no-block">
+        <h4>PRODUCT</h4>
+        <a href="#gold">Gold</a>
+        <a href="#bot-service">Bot Service</a>
+        <a href="#jockey">Jockey</a>
+      </div>
+
+      <div class="footer-col no-block">
+        <h4>CONTACT US</h4>
+        <a id="footerFacebook" href="#" target="_blank" rel="noopener">Chat via Facebook</a>
+        <a id="footerWhatsapp" href="#" target="_blank" rel="noopener">Chat via WhatsApp</a>
+        <a href="#home">Kembali ke Atas</a>
+      </div>
+
+      <div class="footer-col no-block">
+        <h4>OPERATION HOURS</h4>
+        <p>Everyday except weekends</p>
+        <p>06:00 - 23:00 WIB (GMT+8)</p>
+      </div>
+    </div>
+
+    <div class="footer-bottom no-block">
+      &copy; <span id="footerYear"></span> SALZ Game Store. All rights reserved.
+    </div>
+  </footer>
+
+  <button id="scrollTopBtn" class="scroll-top-btn" onclick="scrollToTop()" aria-label="Back to top">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="18 15 12 9 6 15"></polyline>
+    </svg>
+  </button>
+
+  <script src="script.js"></script>
+</body>
+</html>
