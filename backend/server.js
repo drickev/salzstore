@@ -22,8 +22,11 @@ const setCursorHeaders = (res, filePath) => {
   if (cursorMimeTypes[ext]) res.setHeader('Content-Type', cursorMimeTypes[ext]);
 };
 
-app.use(express.static(FRONTEND_DIR, { setHeaders: setCursorHeaders }));
-app.use(express.static(ADMIN_PANEL_DIR, { setHeaders: setCursorHeaders }));
+// index:false disables auto-serving index.html for "/" — otherwise it would
+// short-circuit before the hostname check below ever runs, always serving the
+// public frontend even for admin.<domain> requests.
+app.use(express.static(FRONTEND_DIR, { index: false, setHeaders: setCursorHeaders }));
+app.use(express.static(ADMIN_PANEL_DIR, { index: false, setHeaders: setCursorHeaders }));
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI, {
