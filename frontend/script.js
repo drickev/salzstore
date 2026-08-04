@@ -9,7 +9,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Poll for updates so admin edits show up on the storefront live
   setInterval(loadProducts, 5000);
   setInterval(loadExchangeRates, 30000);
-  setInterval(tickGoldPriceFluctuation, 1800);
 
   setupScrollTopButton();
   document.getElementById('footerYear').textContent = new Date().getFullYear();
@@ -110,25 +109,9 @@ function renderGoldTable() {
     <tr class="${product.status === 'available' ? 'row-available' : 'row-closed'}">
       <td>${product.serverName || product.name}</td>
       <td>${product.stock}</td>
-      <td>IDR <span class="fluct-price no-block" data-base="${product.price}">${formatFluctPrice(product.price)}</span></td>
+      <td>IDR ${product.price.toLocaleString('id-ID')}</td>
     </tr>
   `).join('');
-}
-
-// Cosmetic-only price fluctuation — the real price (data-base) never changes,
-// only the last 3 digits are randomized each tick to make the table feel "live".
-function formatFluctPrice(basePrice) {
-  const roundedBase = Math.floor(basePrice / 1000) * 1000;
-  const lastThreeDigits = Math.floor(Math.random() * 1000);
-  return (roundedBase + lastThreeDigits).toLocaleString('id-ID');
-}
-
-function tickGoldPriceFluctuation() {
-  document.querySelectorAll('.fluct-price').forEach(el => {
-    const base = parseInt(el.dataset.base, 10);
-    if (!base) return;
-    el.textContent = formatFluctPrice(base);
-  });
 }
 
 function escapeHtml(str) {
